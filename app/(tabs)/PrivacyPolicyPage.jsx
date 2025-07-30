@@ -62,10 +62,10 @@ const PrivacyPolicyPage = () => {
         <Text style={styles.sectionTitle}>6. Contact Us</Text>
         <Text style={styles.text}>
           If you have any questions or concerns about this policy, feel free to contact us at:{'\n'}
-          <Text style={styles.email}>support@enableapp.org</Text>
+          <Text style={styles.email}>soni.shaun@gmail.org</Text>
         </Text>
 
-        <Text style={styles.footer}>Last updated: July 6, 2025</Text>
+        <Text style={styles.footer}>Last updated: July 29, 2025</Text>
       </ScrollView>
     </SafeAreaView>
   );

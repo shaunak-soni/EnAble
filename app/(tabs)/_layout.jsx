@@ -14,8 +14,10 @@ import CarePage from './Care';
 import HomePage from './Home';
 import HousingPage from './Housing';
 import RegisterScreen from './Register';
+import FoodPage from './Food';
 import TransportPage from './Transport';
 import PrivacyPolicyPage from './PrivacyPolicyPage';
+import Disclaimer from './Disclaimer';
 import AboutPage from './About';
 import Login from './index';
 
@@ -41,6 +43,8 @@ const BottomTabs = () => {
             iconName = focused ? 'car' : 'car-outline';
           } else if (route.name === 'Care') {
             iconName = focused ? 'medkit' : 'medkit-outline';
+          } else if (route.name === 'Food') {
+            iconName = focused ? 'fast-food' : 'fast-food-outline';
           } else if (route.name === 'Housing') {
             iconName = focused ? 'business' : 'business-outline';
           } else if (route.name === 'About') {
@@ -54,6 +58,7 @@ const BottomTabs = () => {
       <Tab.Screen name="Housing" component={HousingPage} />
       <Tab.Screen name="Transport" component={TransportPage} />
       <Tab.Screen name="Care" component={CarePage} />
+      <Tab.Screen name="Food" component={FoodPage} />
       <Tab.Screen name="About" component={AboutPage} />
     </Tab.Navigator>
   );
@@ -126,6 +131,16 @@ const DrawerNavigator = () => {
         }}
       />
 
+    <Drawer.Screen
+        name="Disclaimer"
+        component={Disclaimer}
+        options={{
+          title: 'Disclaimer',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="information-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
 
       <Drawer.Screen
         name="DeleteAccount"
@@ -148,11 +163,22 @@ const DrawerNavigator = () => {
       <Drawer.Screen
         name="Login"
         component={Login}
-       
+        options={{
+          title: 'Login',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="log-in-outline" size={size} color={color} />
+          ),
+        }}
       />
       <Drawer.Screen
         name="Register"
         component={RegisterScreen}
+        options={{
+          title: 'Register',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="pencil" size={size} color={color} />
+          ),
+        }}
         
       />
     </Drawer.Navigator>

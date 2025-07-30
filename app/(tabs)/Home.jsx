@@ -15,8 +15,7 @@ const HomePage = () => {
         <Text style={styles.title}>Welcome to</Text>
         <Text style={styles.subtitle}>EnAble</Text>
         <Text style={styles.description}>
-          EnAble is a mobile app that helps individuals with disabilities easily find accessible
-          housing.
+          EnAble is your trusted disability companion in finding accessible housing, supportive care facilities, and reliable transportation - all in one place. 
         </Text>
       </View>
     </View>

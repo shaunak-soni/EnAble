@@ -19,7 +19,8 @@ import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 const HousingPage = () => {
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
-
+  
+  const [townFilter, settownFilter] = useState('Any');
   const [selectedBed, setSelectedBed] = useState('Any');
   const [selectedBath, setSelectedBath] = useState('Any');
   const [applicationFeesFilter, setApplicationFeesFilter] = useState('Any');
@@ -52,6 +53,7 @@ const HousingPage = () => {
   useEffect(() => {
     filterListings();
   }, [
+    townFilter,
     selectedBed,
     selectedBath,
     applicationFeesFilter,
@@ -67,6 +69,12 @@ const HousingPage = () => {
 
   const filterListings = () => {
     let filtered = listings;
+
+    if (townFilter !== 'Any') {
+      filtered = filtered.filter(item =>
+        item.town?.toLowerCase().includes(townFilter.toLowerCase())
+      );
+    }
 
     if (selectedBed !== 'Any') {
       filtered = filtered.filter(item => Number(item.bed) === Number(selectedBed));
@@ -149,6 +157,10 @@ const HousingPage = () => {
     <View style={styles.card}>
       {item.image ? <Image source={{ uri: item.image }} style={styles.image} /> : null}
       <Text style={styles.title}>{item.address}</Text>
+      <View style={styles.row}>
+        <MaterialIcons name="house" size={18} color="#555" />
+        <Text style={styles.detail}>Town: {item.town}</Text>
+      </View>
       <View style={styles.row}>
         <FontAwesome5 name="bed" size={16} color="#555" />
         <Text style={styles.detail}>Bed: {item.bed}</Text>
@@ -234,6 +246,18 @@ const HousingPage = () => {
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <Text style={styles.modalTitle}>Filter Listings</Text>
 
+            <Text style={styles.filterLabel}>Town</Text>
+            <Picker selectedValue={townFilter} onValueChange={settownFilter}>
+              <Picker.Item label="Any" value="Any" />
+              <Picker.Item label="Wayne" value="Wayne" />
+              <Picker.Item label="Paramus" value="Paramus" />
+              <Picker.Item label="Maywood" value="Maywood" />
+              <Picker.Item label="River Edge" value="River Edge" />
+              <Picker.Item label="New Milford" value="New Milford" />
+              <Picker.Item label="Dumont" value="Dumont" />
+              <Picker.Item label="Hackensack" value="Hackensack" />
+            </Picker>
+
             <Text style={styles.filterLabel}>Bed</Text>
             <Picker selectedValue={selectedBed} onValueChange={setSelectedBed}>
               <Picker.Item label="Any" value="Any" />
@@ -281,13 +305,30 @@ const HousingPage = () => {
               <Picker.Item label="Off Street" value="off street" />
               <Picker.Item label="Infront of Unit" value="infront of unit" />
               <Picker.Item label="On Street" value="on street" />
+              <Picker.Item label="Onsite with handicapped accessible spots" value="Onsite with handicapped accessible spots" />
+
             </Picker>
 
             <Text style={styles.filterLabel}>General Accessibility</Text>
             <Picker selectedValue={mobilityFilter} onValueChange={setMobilityFilter}>
               <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Front Controls on Stove/Cook-top" value="Front Controls on Stove/Cook-top" />
-              <Picker.Item label="Non digital Kitchen appliances" value="Non digital Kitchen appliances" />
+              <Picker.Item label="No Step Entrance" value="No Step Entrance" />
+              <Picker.Item label="Lever Handles on Door" value="lever Handles on Door" />
+              <Picker.Item label="Lever Handles on Faucets" value="Lever Handles on Faucets" />
+              <Picker.Item label="Front control accessible appliances" value="Front control accessible appliances" />
+              <Picker.Item label="Accessible elevators" value="Accessible elevators" />
+              <Picker.Item label="Non-Lever Door/Faucet Handles" value="Non-Lever Door/Faucet Handles" />
+              <Picker.Item label="Top and Front Loading Washer/Dryer" value="Top and Front Loading Washer/Dryer" />
+              <Picker.Item label="Door Knock / Bell Signaler Accessible" value="Door Knock / Bell Signaler Accessible" />
+              <Picker.Item label="Accessible Peephole" value="Accessible Peephole" />
+              <Picker.Item label="Entry Door Intercom" value="Entry Door Intercom" />
+              <Picker.Item label="Secured Entrance" value="secured entrance" />
+              <Picker.Item label="Automatic Entry Door" value="Automatic Entry Door" />
+              <Picker.Item label="Unit on First Floor" value="Unit on First Floor" />
+              <Picker.Item label="Accessible Light Switches" value="Accessible Light Switches" />
+              <Picker.Item label="Entrance with Steps" value="Entrance with Steps" />
+              <Picker.Item label='Doorway entrance 32" or wider' value='Doorway entrance 32" or wider' />
+              <Picker.Item label="Entrance with Steps" value="Entrance with Steps" />
             </Picker>
 
             <Text style={styles.filterLabel}>Age Requirement</Text>
@@ -309,6 +350,7 @@ const HousingPage = () => {
               <Picker.Item label="Any" value="Any" />
               <Picker.Item label="Yes" value="yes" />
               <Picker.Item label="No" value="no" />
+              <Picker.Item label="Not Listed" value="nl" />              
             </Picker>
 
             <View style={{ marginVertical: 20 }}>

@@ -45,7 +45,7 @@ const Disclaimer = () => {
         <Text style={styles.sectionTitle}>3. Contact Us</Text>
         <Text style={styles.text}>
           If you have any questions or concerns about this policy, feel free to contact us at:{'\n'}
-          <Text style={styles.email}>soni.shaun@gmail.org</Text>
+          <Text style={styles.email}>soni.shaun@gmail.com</Text>
         </Text>
 
         <Text style={styles.footer}>Last updated: July 29, 2025</Text>

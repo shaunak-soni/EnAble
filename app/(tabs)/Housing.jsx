@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { collection, getDocs } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Button,
   FlatList,
   Image,
   Linking,
-  TouchableOpacity,
   Modal,
-  Button,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 
 const HousingPage = () => {
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
-  
+
+  // Filters state
   const [townFilter, settownFilter] = useState('Any');
   const [selectedBed, setSelectedBed] = useState('Any');
   const [selectedBath, setSelectedBath] = useState('Any');
@@ -33,7 +33,50 @@ const HousingPage = () => {
   const [petsFilter, setPetsFilter] = useState('Any');
   const [parkingFilter, setParkingFilter] = useState('Any');
 
-  const [modalVisible, setModalVisible] = useState(false);
+  // Modal states
+  const [filtersModalVisible, setFiltersModalVisible] = useState(false);
+  const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState(null);
+
+  // Filter options
+  const filterOptions = {
+    town: ['Any', 'Wayne', 'Paramus', 'Maywood', 'River Edge', 'New Milford', 'Dumont', 'Hackensack'],
+    bed: ['Any', '1', '2', '3', '4+'],
+    bath: ['Any', '1', '2', '3+'],
+    applicationFees: ['Any', 'Yes', 'No'],
+    kitchen: ['Any', 'Front Controls on Stove/Cook-top', 'Non digital Kitchen appliances'],
+    bathroom: [
+      'Any',
+      'Accessible Height Toilet',
+      'Bath Grab Bars or Reinforcements',
+      'Toilet Grab Bars or Reinforcements',
+      'Walk-in Shower',
+      'Lever Handles on Doors and Faucets'
+    ],
+    parking: ['Any', 'off street', 'infront of unit', 'on street', 'Onsite with handicapped accessible spots'],
+    mobility: [
+      'Any', 
+      'No Step Entrance', 
+      'Lever Handles on Door',
+      'Lever Handles on Faucets',
+      'Front control accessible appliances',
+      'Accessible elevators',
+      'Non-Lever Door/Faucet Handles',
+      'Top and Front Loading Washer/Dryer',
+      'Door Knock / Bell Signaler Accessible',
+      'Accessible Peephole',
+      'Entry Door Intercom',
+      'Secured Entrance',
+      'Automatic Entry Door',
+      'Unit on First Floor',
+      'Accessible Light Switches',
+      'Entrance with Steps',
+      'Doorway entrance 32" or wider',
+    ],
+    ageRequirement: ['Any', 'yes', 'no'],
+    incomeRequirement: ['Any', 'yes', 'no'],
+    pets: ['Any', 'yes', 'no']
+  };
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -46,7 +89,6 @@ const HousingPage = () => {
         console.error('Error fetching listings:', error);
       }
     };
-
     fetchListings();
   }, []);
 
@@ -69,21 +111,12 @@ const HousingPage = () => {
 
   const filterListings = () => {
     let filtered = listings;
-
-    if (townFilter !== 'Any') {
-      filtered = filtered.filter(item =>
+    
+    if (townFilter !== 'Any') filtered = filtered.filter(item =>
         item.town?.toLowerCase().includes(townFilter.toLowerCase())
       );
-    }
-
-    if (selectedBed !== 'Any') {
-      filtered = filtered.filter(item => Number(item.bed) === Number(selectedBed));
-    }
-
-    if (selectedBath !== 'Any') {
-      filtered = filtered.filter(item => Number(item.bath) === Number(selectedBath));
-    }
-
+    if (selectedBed !== 'Any') filtered = filtered.filter(item => String(item.bed) === selectedBed);
+    if (selectedBath !== 'Any') filtered = filtered.filter(item => String(item.bath) === selectedBath);
     if (applicationFeesFilter !== 'Any') {
       filtered = filtered.filter(item =>
         applicationFeesFilter === 'Yes'
@@ -91,67 +124,68 @@ const HousingPage = () => {
           : Number(item.applicationFees) === 0
       );
     }
-
     if (accessibilityFilter !== 'Any') {
       filtered = filtered.filter(item =>
         item.accessibility?.toLowerCase().includes(accessibilityFilter.toLowerCase())
       );
     }
-
-    if (kitchenFilter !== 'Any') {
-      filtered = filtered.filter(item =>
-        item.kitchen?.toLowerCase().includes(kitchenFilter.toLowerCase())
-      );
-    }
-
-    if (bathroomFilter !== 'Any') {
-      filtered = filtered.filter(item =>
-        item.bathroom?.toLowerCase().includes(bathroomFilter.toLowerCase())
-      );
-    }
-
-    if (mobilityFilter !== 'Any') {
-      filtered = filtered.filter(item =>
-        item.mobility?.toLowerCase().includes(mobilityFilter.toLowerCase())
-      );
-    }
-
-    if (ageRequirementFilter !== 'Any') {
-      filtered = filtered.filter(
-        item =>
-          String(item.ageRequirement).toLowerCase() === ageRequirementFilter.toLowerCase()
-      );
-    }
-
-    if (incomeRequirementFilter !== 'Any') {
-      filtered = filtered.filter(
-        item =>
-          String(item.incomeRequirement).toLowerCase() === incomeRequirementFilter.toLowerCase()
-      );
-    }
-
-    if (petsFilter !== 'Any') {
-      filtered = filtered.filter(
-        item => String(item.pets).toLowerCase() === petsFilter.toLowerCase()
-      );
-    }
-
-    if (parkingFilter !== 'Any') {
-      filtered = filtered.filter(item =>
-        item.accessibility?.toLowerCase().includes(parkingFilter.toLowerCase())
-      );
-    }
+    if (kitchenFilter !== 'Any') filtered = filtered.filter(item =>
+      item.kitchen?.toLowerCase().includes(kitchenFilter.toLowerCase())
+    );
+    if (bathroomFilter !== 'Any') filtered = filtered.filter(item =>
+      item.bathroom?.toLowerCase().includes(bathroomFilter.toLowerCase())
+    );
+    if (parkingFilter !== 'Any') filtered = filtered.filter(item =>
+      item.parking?.toLowerCase().includes(parkingFilter.toLowerCase())
+    );
+    if (mobilityFilter !== 'Any') filtered = filtered.filter(item =>
+      item.mobility?.toLowerCase().includes(mobilityFilter.toLowerCase())
+    );
+    if (ageRequirementFilter !== 'Any') filtered = filtered.filter(
+      item => String(item.ageRequirement).toLowerCase() === ageRequirementFilter.toLowerCase()
+    );
+    if (incomeRequirementFilter !== 'Any') filtered = filtered.filter(
+      item => String(item.incomeRequirement).toLowerCase() === incomeRequirementFilter.toLowerCase()
+    );
+    if (petsFilter !== 'Any') filtered = filtered.filter(
+      item => String(item.pets).toLowerCase() === petsFilter.toLowerCase()
+    );
 
     setFilteredListings(filtered);
   };
 
-  const handleCall = (phone) => {
-    Linking.openURL(`tel:${phone}`);
+  const handleCall = (phone) => Linking.openURL(`tel:${phone}`);
+  const handleEmail = (email) => Linking.openURL(`mailto:${email}`);
+
+  const openBottomSheet = (filterName) => {
+    setCurrentFilter(filterName);
+    setBottomSheetVisible(true);
   };
 
-  const handleEmail = (email) => {
-    Linking.openURL(`mailto:${email}`);
+  const handleSelectOption = (option) => {
+    switch (currentFilter) {
+      case 'town' : settownFilter(option); break
+      case 'bed': setSelectedBed(option); break;
+      case 'bath': setSelectedBath(option); break;
+      case 'applicationFees': setApplicationFeesFilter(option); break;
+      case 'accessibility': setAccessibilityFilter(option); break;
+      case 'kitchen': setKitchenFilter(option); break;
+      case 'bathroom': setBathroomFilter(option); break;
+      case 'parking': setParkingFilter(option); break;
+      case 'mobility': setMobilityFilter(option); break;
+      case 'ageRequirement': setAgeRequirementFilter(option); break;
+      case 'incomeRequirement': setIncomeRequirementFilter(option); break;
+      case 'pets': setPetsFilter(option); break;
+    }
+    setBottomSheetVisible(false);
   };
+
+  const renderFilterButton = (label, value, filterKey) => (
+    <TouchableOpacity style={styles.filterButton} onPress={() => openBottomSheet(filterKey)}>
+      <Text style={styles.filterLabel}>{label}</Text>
+      <Text style={styles.selectedValue}>{value}</Text>
+    </TouchableOpacity>
+  );
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
@@ -231,7 +265,7 @@ const HousingPage = () => {
       <FlatList
         ListHeaderComponent={
           <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-            <Button title="Filters" onPress={() => setModalVisible(true)} />
+            <Button title="Filters" onPress={() => setFiltersModalVisible(true)} />
           </View>
         }
         data={filteredListings}
@@ -240,125 +274,45 @@ const HousingPage = () => {
         contentContainerStyle={styles.list}
       />
 
-      {/* Filters Modal with ScrollView */}
-      <Modal animationType="slide" transparent={false} visible={modalVisible}>
-        <View style={styles.modalContainer}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <Text style={styles.modalTitle}>Filter Listings</Text>
+      {/* Main Filters Modal */}
+      <Modal animationType="slide" visible={filtersModalVisible}>
+        <ScrollView style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Filter Listings</Text>
 
-            <Text style={styles.filterLabel}>Town</Text>
-            <Picker selectedValue={townFilter} onValueChange={settownFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Wayne" value="Wayne" />
-              <Picker.Item label="Paramus" value="Paramus" />
-              <Picker.Item label="Maywood" value="Maywood" />
-              <Picker.Item label="River Edge" value="River Edge" />
-              <Picker.Item label="New Milford" value="New Milford" />
-              <Picker.Item label="Dumont" value="Dumont" />
-              <Picker.Item label="Hackensack" value="Hackensack" />
-            </Picker>
+          {renderFilterButton('Town', townFilter, 'town')}
+          {renderFilterButton('Bed', selectedBed, 'bed')}
+          {renderFilterButton('Bath', selectedBath, 'bath')}
+          {renderFilterButton('Application Fees', applicationFeesFilter, 'applicationFees')}
+          {renderFilterButton('Kitchen', kitchenFilter, 'kitchen')}
+          {renderFilterButton('Bathroom', bathroomFilter, 'bathroom')}
+          {renderFilterButton('Parking', parkingFilter, 'parking')}
+          {renderFilterButton('General Accessibility', mobilityFilter, 'mobility')}
+          {renderFilterButton('Age Requirement', ageRequirementFilter, 'ageRequirement')}
+          {renderFilterButton('Income Requirement', incomeRequirementFilter, 'incomeRequirement')}
+          {renderFilterButton('Pets', petsFilter, 'pets')}
 
-            <Text style={styles.filterLabel}>Bed</Text>
-            <Picker selectedValue={selectedBed} onValueChange={setSelectedBed}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="1" value="1" />
-              <Picker.Item label="2" value="2" />
-              <Picker.Item label="3" value="3" />
-              <Picker.Item label="4+" value="4" />
-            </Picker>
+          <View style={{ marginVertical: 20 }}>
+            <Button title="Apply Filters" onPress={() => setFiltersModalVisible(false)} />
+          </View>
+          <Button title="Close" color="gray" onPress={() => setFiltersModalVisible(false)} />
+        </ScrollView>
 
-            <Text style={styles.filterLabel}>Bath</Text>
-            <Picker selectedValue={selectedBath} onValueChange={setSelectedBath}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="1" value="1" />
-              <Picker.Item label="2" value="2" />
-              <Picker.Item label="3+" value="3" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Application Fees</Text>
-            <Picker selectedValue={applicationFeesFilter} onValueChange={setApplicationFeesFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Yes" value="Yes" />
-              <Picker.Item label="No" value="No" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Kitchen</Text>
-            <Picker selectedValue={kitchenFilter} onValueChange={setKitchenFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Front Controls on Stove/Cook-top" value="Front Controls on Stove/Cook-top" />
-              <Picker.Item label="Non digital Kitchen appliances" value="Non digital Kitchen appliances" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Bathroom</Text>
-            <Picker selectedValue={bathroomFilter} onValueChange={setBathroomFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Accessible Height Toilet" value="Accessible Height Toilet" />
-              <Picker.Item label="Bath Grab Bars or Reinforcements" value="Bath Grab Bars or Reinforcements" />
-              <Picker.Item label="Toilet Grab Bars or Reinforcements" value="Toilet Grab" />
-              <Picker.Item label="Walk in Shower" value="Walk-in Shower" />
-              <Picker.Item label="Lever Handles on Doors and Faucets" value="Lever Handles on Doors and Faucets" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Parking</Text>
-            <Picker selectedValue={parkingFilter} onValueChange={setParkingFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Off Street" value="off street" />
-              <Picker.Item label="Infront of Unit" value="infront of unit" />
-              <Picker.Item label="On Street" value="on street" />
-              <Picker.Item label="Onsite with handicapped accessible spots" value="Onsite with handicapped accessible spots" />
-
-            </Picker>
-
-            <Text style={styles.filterLabel}>General Accessibility</Text>
-            <Picker selectedValue={mobilityFilter} onValueChange={setMobilityFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="No Step Entrance" value="No Step Entrance" />
-              <Picker.Item label="Lever Handles on Door" value="lever Handles on Door" />
-              <Picker.Item label="Lever Handles on Faucets" value="Lever Handles on Faucets" />
-              <Picker.Item label="Front control accessible appliances" value="Front control accessible appliances" />
-              <Picker.Item label="Accessible elevators" value="Accessible elevators" />
-              <Picker.Item label="Non-Lever Door/Faucet Handles" value="Non-Lever Door/Faucet Handles" />
-              <Picker.Item label="Top and Front Loading Washer/Dryer" value="Top and Front Loading Washer/Dryer" />
-              <Picker.Item label="Door Knock / Bell Signaler Accessible" value="Door Knock / Bell Signaler Accessible" />
-              <Picker.Item label="Accessible Peephole" value="Accessible Peephole" />
-              <Picker.Item label="Entry Door Intercom" value="Entry Door Intercom" />
-              <Picker.Item label="Secured Entrance" value="secured entrance" />
-              <Picker.Item label="Automatic Entry Door" value="Automatic Entry Door" />
-              <Picker.Item label="Unit on First Floor" value="Unit on First Floor" />
-              <Picker.Item label="Accessible Light Switches" value="Accessible Light Switches" />
-              <Picker.Item label="Entrance with Steps" value="Entrance with Steps" />
-              <Picker.Item label='Doorway entrance 32" or wider' value='Doorway entrance 32" or wider' />
-              <Picker.Item label="Entrance with Steps" value="Entrance with Steps" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Age Requirement</Text>
-            <Picker selectedValue={ageRequirementFilter} onValueChange={setAgeRequirementFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Yes" value="yes" />
-              <Picker.Item label="No" value="no" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Income Requirement</Text>
-            <Picker selectedValue={incomeRequirementFilter} onValueChange={setIncomeRequirementFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Yes" value="yes" />
-              <Picker.Item label="No" value="no" />
-            </Picker>
-
-            <Text style={styles.filterLabel}>Pets</Text>
-            <Picker selectedValue={petsFilter} onValueChange={setPetsFilter}>
-              <Picker.Item label="Any" value="Any" />
-              <Picker.Item label="Yes" value="yes" />
-              <Picker.Item label="No" value="no" />
-              <Picker.Item label="Not Listed" value="nl" />              
-            </Picker>
-
-            <View style={{ marginVertical: 20 }}>
-              <Button title="Apply Filters" onPress={() => setModalVisible(false)} />
-            </View>
-            <Button title="Close" color="gray" onPress={() => setModalVisible(false)} />
-          </ScrollView>
-        </View>
+        {/* Bottom Sheet for Options */}
+        {bottomSheetVisible && (
+          <View style={styles.bottomSheet}>
+            <Text style={styles.modalTitle}>Select {currentFilter}</Text>
+            {filterOptions[currentFilter]?.map(opt => (
+              <TouchableOpacity
+                key={opt}
+                style={styles.optionItem}
+                onPress={() => handleSelectOption(opt)}
+              >
+                <Text style={styles.optionText}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+            <Button title="Cancel" onPress={() => setBottomSheetVisible(false)} />
+          </View>
+        )}
       </Modal>
     </View>
   );
@@ -367,13 +321,8 @@ const HousingPage = () => {
 export default HousingPage;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fdfdfd',
-  },
-  list: {
-    padding: 16,
-  },
+  container: { flex: 1, backgroundColor: '#fdfdfd' },
+  list: { padding: 16 },
   card: {
     backgroundColor: '#fff',
     padding: 16,
@@ -383,58 +332,39 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 5,
+    elevation: 5
   },
-  image: {
-    height: 160,
-    borderRadius: 10,
-    marginBottom: 12,
-    width: '100%',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  row: {
+  image: { height: 160, borderRadius: 10, marginBottom: 12, width: '100%' },
+  title: { fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', marginVertical: 2, flexWrap: 'wrap' },
+  detail: { fontSize: 14, color: '#555', marginLeft: 6 },
+  link: { fontSize: 14, color: '#007AFF', marginLeft: 6, textDecorationLine: 'underline' },
+  iconSpacing: { marginLeft: 16 },
+  modalContainer: { flex: 1, backgroundColor: '#fff', padding: 16 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 16, marginTop: 32, textAlign: 'center' },
+  filterButton: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
     flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 2,
-    flexWrap: 'wrap',
+    justifyContent: 'space-between'
   },
-  detail: {
-    fontSize: 14,
-    color: '#555',
-    marginLeft: 6,
-  },
-  link: {
-    fontSize: 14,
-    color: '#007AFF',
-    marginLeft: 6,
-    textDecorationLine: 'underline',
-  },
-  iconSpacing: {
-    marginLeft: 16,
-  },
-  modalContainer: {
-    flex: 1,
+  filterLabel: { fontSize: 16, fontWeight: '500' },
+  selectedValue: { fontSize: 16, color: '#555' },
+  bottomSheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
+    padding: 20,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  filterLabel: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 10,
-    paddingLeft: 12,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  optionItem: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  optionText: { fontSize: 16 }
 });
